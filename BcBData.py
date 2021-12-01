@@ -3,10 +3,11 @@ from typing import Union
 
 ##########################
 # Author: Tarek Vilela
-# Last update: 2021-11-30
+# Contributor: Murilo Getlinger Coelho @ FGV-EESP
+# Last update: 2021-12-01
 ##########################
 
-def get_series(code: int, name: str = 'valor', 
+def get_series(code: int, name: str = 'value', 
                 start: str = None,  end: str = None, 
                 return_type: Union[pd.Series, pd.DataFrame] = pd.Series, date_column: str = 'Data') -> pd.Series:
     
@@ -14,20 +15,20 @@ def get_series(code: int, name: str = 'valor',
     Function to download series based on series code. 
 
     code: series code (int).
-    name: rename downloaded series (str) (optional) (defautl is 'valor')
-    start: start date (str) (yyyy-mm-dd) (optional) (defautl is None)
-    end: end date (str) (yyyy-mm-dd) (optional) (defautl is None)
-    return_type: type of outuput (class) (optional) (defautl is pd.Series). Can be either pd.Series or pd.DataFrame. 
+    name: rename downloaded series (str) (optional) (default is 'value')
+    start: start date (str) (yyyy-mm-dd) (optional) (default is None)
+    end: end date (str) (yyyy-mm-dd) (optional) (default is None)
+    return_type: type of output (class) (optional) (default is pd.Series). Can be either pd.Series or pd.DataFrame. 
 
     '''
 
     # url base
     url_base = 'http://api.bcb.gov.br/dados/serie/bcdata.sgs.{}/dados?formato=csv'
 
-    # url com o código da série
+    # url with the code of the series
     url = url_base.format(code)
 
-    # download da série, correção do formato da data
+    # series download and changing the format of the datestring
     df = pd.read_csv(url, decimal=',', sep=';')
     df.columns = [date_column, name]
     df[date_column] = pd.to_datetime(df[date_column], format='%d/%m/%Y')
@@ -47,7 +48,7 @@ def get_series(code: int, name: str = 'valor',
 
 def get_multiple_series(code_list: list, name_list: list, start: str = None, end: str = None) -> pd.DataFrame:
     '''
-    Function to download series.
+    Function to download multiple series.
     '''
 
     n1 = len(code_list)
@@ -69,7 +70,7 @@ def get_multiple_series(code_list: list, name_list: list, start: str = None, end
     return result.loc[slice(start, end)]
 
 
-def create_query_url(frequency: str, Indicadores: list = None, start: str = None, end: str = None) -> str:
+def create_query_url(frequency: str, Indicators: list = None, start: str = None, end: str = None) -> str:
     
     urls_dict = {'annual': 'https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoAnuais',
                  'quarterly': 'https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoTrimestrais',
@@ -86,8 +87,8 @@ def create_query_url(frequency: str, Indicadores: list = None, start: str = None
 
     filters = []
 
-    if Indicadores:
-        indic_filter = ' or '.join([f"Indicador eq '{i}'" for i in Indicadores])
+    if Indicators:
+        indic_filter = ' or '.join([f"Indicador eq '{i}'" for i in Indicators])
         filters.append(indic_filter)
 
     if start:
@@ -110,13 +111,13 @@ def create_query_url(frequency: str, Indicadores: list = None, start: str = None
     return url
 
 
-def get_market_expectations(frequency: str, Indicadores: list = None, start: str = None, end: str = None) -> pd.DataFrame:
+def get_market_expectations(frequency: str, Indicators: list = None, start: str = None, end: str = None) -> pd.DataFrame:
     '''
     Function to download market expectations.
     You must choose a frequency or from a especial category, such as 'top5s-monthly'.
     '''
 
-    url = create_query_url(frequency, Indicadores, start, end)
+    url = create_query_url(frequency, Indicators, start, end)
     
     df = pd.read_csv(url, sep=',', decimal=',')
     df['Data'] = pd.to_datetime(df['Data'])
